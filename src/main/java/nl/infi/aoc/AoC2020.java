@@ -94,15 +94,49 @@ In een zak met zijde van lengte <b>25</b> passen: <b>4.325</b> pakjes<br/>
 In Nederland wonen momenteel <b>17.486.751</b> inwoners.<br/>
 De elven willen graag alle pakjes voor Nederland in één zak stoppen.
 </p><p>
-Wat is de minimale lengte van een zijde voor de zak die zak?
+<b>Wat is de minimale lengte van een zijde voor de zak die zak?</b>
 </p>
+<hr/>
+<p>
+Om een zak te kunnen maken hebben de elven natuurlijk wel <br/>
+voldoende stof nodig. De zak bestaat uit:
+<ul>
+<li>een bodem <b>‾</b>.</li>
+<li>de schuine zijdes <b>/</b> of <b>\</b>.</li>
+<li>De zijkanten <b>|</b>.</li>
+<li>De bovenkant <b>_</b>.</li>
+</ul>
+<h5>Conclusie</h5>
+<p>
+Voor een zak met zijde van lengte <b>1</b> zijn <b>8</b> stukken stof nodig<br/>
+Voor een zak met zijde van lengte <b>4</b> zijn <b>32</b> stukken stof nodig<br/>
+Voor een zak met zijde van lengte <b>25</b> zijn <b>200</b> stukken stof nodig<br/>
+</p><p>
+De kerstman kan op zijn tocht in 1 zak alle cadeautjes voor 1 <br/>
+continent meenemen.<br/>
+De elven zetten van tevoren alle zakken klaar op de noordpool.<br/>
+Na ieder continent komt hij even terug op de noordpool om de <br/>
+volgende zak op te halen.<br/>
+De elven weten per continent hoeveel cadeautjes er bezorgt (sic)<br/>
+moeten worden:
+<table>
+<tr><td>Asia</td><td style="text-align: right"><b>4.541.363.434</b></td></tr>
+<tr><td>Africa</td><td style="text-align: right"><b>1.340.832.532</b></td></tr>
+<tr><td>Europe</td><td style="text-align: right"><b>747.786.585</b></td></tr>
+<tr><td>South America</td><td style="text-align: right"><b>430.832.752</b></td></tr>
+<tr><td>North America</td><td style="text-align: right"><b>369.012.203</b></td></tr>
+<tr><td>Oceania</td><td style="text-align: right"><b>42.715.772</b></td></tr>
+</table>
+</p>
+<b>Hoeveel stukken stof moeten de elven mimimaal kopen om alle <br/>
+zakken te kunnen maken?</b>
 */
 public class AoC2020 {
 	
-	private int berekenPakjesVoorZijde(int zijde) {
-		int pakjes = zijde;
-		int summant = zijde;
-		for (int i = 0; i < zijde - 1; i++) {
+	private long berekenPakjesVoorZijde(long zijde) {
+		long pakjes = zijde;
+		long summant = zijde;
+		for (long i = 0; i < zijde - 1; i++) {
 			summant += 2;
 			pakjes += summant;
 		}
@@ -112,16 +146,26 @@ public class AoC2020 {
 		return pakjes;
 	}
 	
-	private int zoekZijdeVoorPakjes(int pakjes) {
-		int i = 1;
+	private long zoekZijdeVoorPakjes(long pakjes) {
+		long i = 1;
 		while (berekenPakjesVoorZijde(i) < pakjes) {
 			i++;
 		}
 		return i;
 	}
 	
-	public int solve(int pakjes) {
+	public long solvePart1(long pakjes) {
 		return zoekZijdeVoorPakjes(pakjes);
+	}
+	
+	public long solvePart2() {
+		return 8 * (zoekZijdeVoorPakjes(4_541_363_434L)
+					+ zoekZijdeVoorPakjes(1_340_832_532L)
+					+ zoekZijdeVoorPakjes(747_786_585L)
+					+ zoekZijdeVoorPakjes(430_832_752L)
+					+ zoekZijdeVoorPakjes(369_012_203L)
+					+ zoekZijdeVoorPakjes(42_715_772L)
+				);		
 	}
 	
 	public static <V> void lap(String prefix, Callable<V> callable) throws Exception {
@@ -140,16 +184,18 @@ public class AoC2020 {
 	        time = timeSpent / 1000000.0;
 	        unit = "s";
 	    }
-	    System.out.println(String.format("%s : %s, took: %.3f %s", prefix, answer, time, unit));
+	    System.out.println(String.format("%s : %s, took: %.3f %s", 
+	    								 prefix, answer, time, unit));
 	}
 	 
 	public static void main(String[] args) throws Exception {
-		assert new AoC2020().solve(5) == 1;
-		assert new AoC2020().solve(24) == 2;
-		assert new AoC2020().solve(57) == 3;
-		assert new AoC2020().solve(104) == 4;
-		assert new AoC2020().solve(680) == 10;
-		assert new AoC2020().solve(4325) == 25;
-		AoC2020.lap("Part 1", () -> new AoC2020().solve(17_486_751));
+		assert new AoC2020().solvePart1(5) == 1;
+		assert new AoC2020().solvePart1(24) == 2;
+		assert new AoC2020().solvePart1(57) == 3;
+		assert new AoC2020().solvePart1(104) == 4;
+		assert new AoC2020().solvePart1(680) == 10;
+		assert new AoC2020().solvePart1(4325) == 25;
+		lap("Part 1", () -> new AoC2020().solvePart1(17_486_751L));
+		lap("Part 2", () -> new AoC2020().solvePart2());
 	}
 }
