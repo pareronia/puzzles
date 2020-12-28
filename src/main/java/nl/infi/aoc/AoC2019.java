@@ -1,13 +1,72 @@
 package nl.infi.aoc;
 
+import static java.util.stream.Collectors.toList;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Callable;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.tuple.Pair;
 
+/**
+<h1><a href="https://aoc.infi.nl/2019">Noordpool gesmolten: <br/>
+Rendieren verkouden</a></h1>
+<p>Vanwege de klimaatverandering smelt het ijs op de <br/>
+noordpool erg hard en hebben alle rendieren natte <br/>
+voeten gekregen. Daardoor zijn ze verkouden <br/>
+geworden en moet de kerstman dit jaar zonder <br/>
+rendieren op pad. Dit jaar zal de kerstman daarom <br/>
+niet met zijn slee door de lucht vliegen om <br/>
+iedereen cadeautjes te bezorgen.</p>
+<p>Een kerst zonder cadeautjes kan natuurlijk niet, <br/>
+daarom heeft de kerstman zich door zijn elven een <br/>
+paar springlaarzen aan laten meten waarmee hij van <br/>
+flatgebouw naar flatgebouw kan springen om zo snel <br/>
+door de stad te kunnen reizen en toch bij alle <br/>
+kinderen een cadeautje te bezorgen.</p>
+<p>De kerstman moest wel even wennen aan zijn <br/>
+springlaarzen en heeft de afgelopen maanden <br/>
+geoefend. Daarbij ging het ook nog wel eens mis, <br/>
+waardoor de kerstman, nogal pijnlijk, op de grond <br/>
+belandde in plaats van op het volgende flatgebouw <br/>
+en kon hij opnieuw beginnen.</p>
+<p>Ook de Noordpool doet aan big data en de elven <br/>
+hebben alle oefentochtjes van de kerstman gevolgd, <br/>
+gecodeerd en opgeslagen.</p>
+<p>De bewegingen van de kerstman hebben de big data <br/>
+elven gecodeerd naar 'stappen':</p>
+<ul>
+<li>Voor de eerste stap staat de kerstman op het <br/>
+dak van het eerste flatgebouw.</li>
+<li>Elke stap beweegt hij 1 plaats naar rechts <br/>
+(+1 in de x positie).</li>
+<li>Tijdens elke stap kan de kerstman 1 keer zijn <br/>
+springlaarzen gebruiken.</li>
+<li>Met de springlaarzen kan de kerstman een extra <br/>
+verplaatsing doen in de positieve x en positieve <br/>
+y richting waarbij 0 =< x + y=< 4.</li>
+<li>Als de kerstman zich na de verplaatsing op of <br/>
+boven het dak van een flatgebouw bevindt dan <br/>
+landt hij veilig op dat dak. Zijn nieuwe y <br/>
+positie is dan de hoogte van het dak.</li>
+<li>Als de kerstman zich na de verplaatsing niet <br/>
+op of boven het dak van een flatgebouw bevindt dan <br/>
+valt hij op de grond en is de tocht mislukt.</li>
+<li>De kerstman kan voor een ander gebouw langs <br/>
+springen, mits deze sprong voldoet aan de <br/>
+verplaatsingsregels.</li>
+<li>Een flatgebouw heeft altijd een breedte van 1.</li>
+</ul>
+<p><b>Na hoeveel stappen valt de kerstman op de grond?.</b></br>
+Het antwoord is het stapnummer van de stap waarbij </br>
+de kerstman op de grond valt, of 0 als de kerstman </br>
+het dak van het laatste flatgebouw bereikt.</p>
+ */
 public class AoC2019 {
 	
 	private final String input;
@@ -33,44 +92,48 @@ public class AoC2019 {
 		System.out.println(obj);
 	}
 	
-	private Pair<List<Pair<Integer, Integer>>, List<Pair<Integer, Integer>>> parse() {
+	private Pair<List<Positie>, List<Positie>> parse() {
 		final String oneline = input.replace("\r\n", "");
-		final Matcher flatsMatcher = Pattern.compile("\"flats\":\\s?\\[(.*)\\],\\s?\"").matcher(oneline);
-		flatsMatcher.find();
-		final String flatsMatch = flatsMatcher.group(1).replace("[", "").replace("]", "");
-		final List<Pair<Integer, Integer>> flats = new ArrayList<>();
-		final String[] flatsSplit = flatsMatch.split(",");
-		for (int i = 0; i < flatsSplit.length; i+=2) {
-			flats.add(Pair.of(Integer.valueOf(flatsSplit[i]), Integer.valueOf(flatsSplit[i+1])));
-		}
-		final Matcher sprongenMatcher = Pattern.compile("\"sprongen\":\\s?\\[(.*)\\]").matcher(oneline);
-		sprongenMatcher.find();
-		final String sprongenMatch = sprongenMatcher.group(1).replace("[", "").replace("]", "");
-		final List<Pair<Integer, Integer>> sprongen = new ArrayList<>();
-		final String[] sprongenSplit = sprongenMatch.split(",");
-		for (int i = 0; i < sprongenSplit.length; i+=2) {
-			sprongen.add(Pair.of(Integer.valueOf(sprongenSplit[i]), Integer.valueOf(sprongenSplit[i+1])));
-		}
-		return Pair.of(flats, sprongen);
+		final String flatsRegExp = "\"flats\":\\s?\\[(.*)\\],\\s?\"";
+		final String sprongenRegExp = "\"sprongen\":\\s?\\[(.*)\\]";
+		final Function<String, List<Positie>> parseFunctie = regExp -> {
+			final List<Positie> posities = new ArrayList<>();
+			final Matcher matcher = Pattern.compile(regExp).matcher(oneline);
+			matcher.find();
+			final String match
+					= matcher.group(1).replace("[", "").replace("]", "");
+			final String[] split = match.split(",");
+			for (int i = 0; i < split.length; i += 2) {
+				posities.add(Positie.of(Integer.valueOf(split[i]),
+										Integer.valueOf(split[i + 1])));
+			}
+			return posities;
+		};
+		final List<List<Positie>> resultaat
+				= Stream.of(flatsRegExp, sprongenRegExp)
+						.map(parseFunctie)
+						.collect(toList());
+		return Pair.of(resultaat.get(0), resultaat.get(1));
 	}
 	
 	public long solvePart1() {
-		final Pair<List<Pair<Integer, Integer>>, List<Pair<Integer, Integer>>> parsed = parse();
+		final Pair<List<Positie>, List<Positie>> parsed = parse();
 		log(parsed);
-		final List<Pair<Integer, Integer>> flats = parsed.getLeft();
-		final List<Pair<Integer, Integer>> sprongen = parsed.getRight();
+		final List<Positie> flats = parsed.getLeft();
+		final List<Positie> sprongen = parsed.getRight();
 		int flat = 0;
 		int sprong = 0;
-		Pair<Integer, Integer> positie = flats.get(flat);
+		Positie positie = flats.get(flat);
 		for (int i = 0; i < sprongen.size(); i++) {
 			sprong = i + 1;
-			final Pair<Integer, Integer> deSprong = sprongen.get(i);
-			positie = Pair.of(positie.getLeft() + 1 + deSprong.getLeft(), positie.getRight() + deSprong.getRight());
+			final Positie deSprong = sprongen.get(i);
+			positie = Positie.of(positie.x + 1 + deSprong.x,
+								 positie.y + deSprong.y);
 			int nieuweFlat = flat;
 			for (int j = flat + 1; j < flats.size(); j++) {
-				final Pair<Integer, Integer> deFlat = flats.get(j);
-				if (positie.getLeft() == deFlat.getLeft() && positie.getRight() >= deFlat.getRight()) {
-					positie = Pair.of(positie.getLeft(), deFlat.getRight());
+				final Positie deFlat = flats.get(j);
+				if (positie.x == deFlat.x && positie.y >= deFlat.y) {
+					positie = Positie.of(positie.x, deFlat.y);
 					nieuweFlat = j;
 					break;  // geland
 				}
@@ -97,14 +160,15 @@ public class AoC2019 {
 	    if (timeSpent < 1000) {
 	        time = timeSpent;
 	        unit = "µs";
-	    } else if (timeSpent < 1000000) {
+	    } else if (timeSpent < 1_000_000) {
 	        time = timeSpent / 1000.0;
 	        unit = "ms";
 	    } else {
-	        time = timeSpent / 1000000.0;
+	        time = timeSpent / 1_000_000.0;
 	        unit = "s";
 	    }
-	    System.out.println(String.format("%s : %s, took: %.3f %s", prefix, answer, time, unit));
+	    System.out.println(String.format("%s : %s, took: %.3f %s",
+	    								 prefix, answer, time, unit));
 	}
 	
 	public static void main(String[] args) throws Exception {
@@ -119,8 +183,44 @@ public class AoC2019 {
 			"}";
 	
 	private static final String INPUT =
-			"{\"flats\":[[5,2],[6,3],[7,5],[9,6],[11,9],[15,10],[18,6],[22,7],[23,8],[25,6],[27,9],[31,6],[34,5],"
-			+ "[36,7],[37,9],[38,10],[40,4],[42,7],[46,6],[48,8],[52,2],[54,4],[58,5],[59,7],[61,8]],"
-			+ "\"sprongen\":[[0,1],[0,2],[1,1],[0,0],[3,1],[2,0],[3,1],[0,1],[1,0],[1,3],[3,0],[2,0],[1,2],"
-			+ "[0,2],[0,1],[1,0],[1,3],[3,0],[1,2],[3,0],[1,2],[3,1],[0,2],[1,1]]}";
+			"{\"flats\":[[5,2],[6,3],[7,5],[9,6],[11,9],[15,10],[18,6],[22,7],"
+			+ "[23,8],[25,6],[27,9],[31,6],[34,5],[36,7],[37,9],[38,10],"
+			+ "[40,4],[42,7],[46,6],[48,8],[52,2],[54,4],[58,5],[59,7],[61,8]],"
+			+ "\"sprongen\":[[0,1],[0,2],[1,1],[0,0],[3,1],[2,0],[3,1],[0,1],"
+			+ "[1,0],[1,3],[3,0],[2,0],[1,2],[0,2],[0,1],[1,0],[1,3],[3,0],"
+			+ "[1,2],[3,0],[1,2],[3,1],[0,2],[1,1]]}";
+	
+	private static final class Positie {
+		private final Integer x;
+		private final Integer y;
+		
+		private Positie(Integer x, Integer y) {
+			this.x = Objects.requireNonNull(x, "Expect non-null x value");
+			this.y = Objects.requireNonNull(y, "Expect non-null y value");
+		}
+		
+		public static Positie of(Integer x, Integer y) {
+			return new Positie(x, y);
+		}
+
+		@Override
+		public String toString() {
+			return "(x=" + x + ", y=" + y + ")";
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + x.hashCode();
+			result = prime * result + y.hashCode();
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			final Positie other = (Positie) obj;
+			return this.x.equals(other.x) && this.y.equals(other.y);
+		}
+	}
 }
