@@ -1,10 +1,12 @@
 package nl.infi.aoc;
 
+import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toList;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -116,11 +118,40 @@ public class AoC2019 {
 		return Pair.of(resultaat.get(0), resultaat.get(1));
 	}
 	
+	public void visualiseerPart1(List<Positie> flats) {
+		final Integer maxFlatX = flats.stream()
+				.max(comparing(p -> p.x))
+				.map(p -> p.x)
+				.orElseThrow(() -> new RuntimeException("Empty stream"));
+		final Integer maxFlatY = flats.stream()
+				.max(comparing(p -> p.y))
+				.map(p -> p.y)
+				.orElseThrow(() -> new RuntimeException("Empty stream"));
+		Stream.iterate(maxFlatY, i -> i - 1).limit(maxFlatY).forEach(y -> {
+			Stream.iterate(1, i -> i + 1).limit(maxFlatX + 1).forEach(x -> {
+				final Optional<Positie> flat = flats.stream()
+						.filter(f -> f.x == x)
+						.findFirst();
+				if (flat.isPresent()) {
+					if (y > flat.get().y) {
+						System.out.print(" ");
+					} else {
+						System.out.print("\u2592");
+					}
+				} else {
+					System.out.print(" ");
+				}
+			});
+			System.out.println("");
+		});
+	}
+	
 	public long solvePart1() {
 		final Pair<List<Positie>, List<Positie>> parsed = parse();
 		log(parsed);
 		final List<Positie> flats = parsed.getLeft();
 		final List<Positie> sprongen = parsed.getRight();
+		visualiseerPart1(flats);
 		int flat = 0;
 		int sprong = 0;
 		Positie positie = flats.get(flat);
