@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.Callable;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -69,14 +68,13 @@ Het antwoord is het stapnummer van de stap waarbij </br>
 de kerstman op de grond valt, of 0 als de kerstman </br>
 het dak van het laatste flatgebouw bereikt.</p>
  */
-public class AoC2019 {
+public class AoC2019 extends AocBase {
 	
 	private final String input;
-	private final boolean debug;
 	
 	private AoC2019(String input, boolean debug) {
+		super(debug);
 		this.input = input;
-		this.debug = debug;
 	}
 
 	public static final AoC2019 create(String input) {
@@ -85,14 +83,6 @@ public class AoC2019 {
 
 	public static final AoC2019 createDebug(String input) {
 		return new AoC2019(input, true);
-	}
-	
-	@SuppressWarnings("unused")
-	private void log(Object obj) {
-		if (!debug) {
-			return;
-		}
-		System.out.println(obj);
 	}
 	
 	private Pair<List<Positie>, List<Positie>> parse() {
@@ -185,13 +175,14 @@ public class AoC2019 {
 		}
 		return bereiktePosities;
 	}
-	
+
+	@Override
 	public long solvePart1() {
 		final Pair<List<Positie>, List<Positie>> parsed = parse();
 		final List<Positie> flats = parsed.getLeft();
 		final List<Positie> sprongen = parsed.getRight();
 		final List<Positie> bereiktePosities = berekenPosities(flats, sprongen);
-		if (bereiktePosities.get(bereiktePosities.size() - 1).y 
+		if (bereiktePosities.get(bereiktePosities.size() - 1).y
 				== flats.get(flats.size() - 1).y) {
 			return 0;  // geland op laatste flat
 		} else {
@@ -199,26 +190,6 @@ public class AoC2019 {
 		}
 	}
 
-	public static <V> void lap(String prefix, Callable<V> callable) throws Exception {
-	    long timerStart = System.nanoTime();
-	    final V answer = callable.call();
-	    long timeSpent = (System.nanoTime() - timerStart) / 1000;
-	    double time;
-	    String unit;
-	    if (timeSpent < 1000) {
-	        time = timeSpent;
-	        unit = "µs";
-	    } else if (timeSpent < 1_000_000) {
-	        time = timeSpent / 1000.0;
-	        unit = "ms";
-	    } else {
-	        time = timeSpent / 1_000_000.0;
-	        unit = "s";
-	    }
-	    System.out.println(String.format("%s : %s, took: %.3f %s",
-	    								 prefix, answer, time, unit));
-	}
-	
 	public static void main(String[] args) throws Exception {
 		assert AoC2019.createDebug(TEST).solvePart1() == 4;
 		AoC2019.lap("Part 1", () -> AoC2019.create(INPUT1).solvePart1());
@@ -227,10 +198,10 @@ public class AoC2019 {
 		AoC2019.create(INPUT2).visualiseerPart1();
 	}
 
-	private static final String TEST = 
-			"{\r\n" + 
-			"\"flats\": [[1,4],[3,8],[4,3],[5,7],[7,4],[10,3]],\r\n" + 
-			"\"sprongen\": [[2,0],[0,4],[1,0],[0,0]]\r\n" + 
+	private static final String TEST =
+			"{\r\n" +
+			"\"flats\": [[1,4],[3,8],[4,3],[5,7],[7,4],[10,3]],\r\n" +
+			"\"sprongen\": [[2,0],[0,4],[1,0],[0,0]]\r\n" +
 			"}";
 	
 	private static final String INPUT1 =

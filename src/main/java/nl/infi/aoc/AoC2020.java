@@ -1,6 +1,8 @@
 package nl.infi.aoc;
 
-import java.util.concurrent.Callable;
+import static java.util.stream.Collectors.summingLong;
+
+import java.util.stream.Stream;
 
 /**
  * 
@@ -131,8 +133,23 @@ moeten worden:
 <b>Hoeveel stukken stof moeten de elven mimimaal kopen om alle <br/>
 zakken te kunnen maken?</b>
 */
-public class AoC2020 {
+public class AoC2020 extends AocBase {
 	
+	final Long[] input;
+	
+	private AoC2020(boolean debug, Long[] input) {
+		super(debug);
+		this.input = input;
+	}
+
+	public static final AoC2020 create(Long... input) {
+		return new AoC2020(false, input);
+	}
+
+	public static final AoC2020 createDebug(Long... input) {
+		return new AoC2020(true, input);
+	}
+
 	private long berekenPakjesVoorZijde(long zijde) {
 		long pakjes = zijde;
 		long summant = zijde;
@@ -153,49 +170,33 @@ public class AoC2020 {
 		}
 		return i;
 	}
-	
-	public long solvePart1(long pakjes) {
-		return zoekZijdeVoorPakjes(pakjes);
+
+	@Override
+	public long solvePart1() {
+		assert this.input.length == 1;
+		return zoekZijdeVoorPakjes(input[0]);
 	}
 	
+	@Override
 	public long solvePart2() {
-		return 8 * (zoekZijdeVoorPakjes(4_541_363_434L)
-					+ zoekZijdeVoorPakjes(1_340_832_532L)
-					+ zoekZijdeVoorPakjes(747_786_585L)
-					+ zoekZijdeVoorPakjes(430_832_752L)
-					+ zoekZijdeVoorPakjes(369_012_203L)
-					+ zoekZijdeVoorPakjes(42_715_772L)
-				);		
+		return 8 * Stream.of(this.input)
+				.collect(summingLong(i -> zoekZijdeVoorPakjes(i)));
 	}
 	
-	public static <V> void lap(String prefix, Callable<V> callable) throws Exception {
-	    long timerStart = System.nanoTime();
-	    final V answer = callable.call();
-	    long timeSpent = (System.nanoTime() - timerStart) / 1000;
-	    double time;
-	    String unit;
-	    if (timeSpent < 1000) {
-	        time = timeSpent;
-	        unit = "µs";
-	    } else if (timeSpent < 1000000) {
-	        time = timeSpent / 1000.0;
-	        unit = "ms";
-	    } else {
-	        time = timeSpent / 1000000.0;
-	        unit = "s";
-	    }
-	    System.out.println(String.format("%s : %s, took: %.3f %s", 
-	    								 prefix, answer, time, unit));
-	}
-	 
 	public static void main(String[] args) throws Exception {
-		assert new AoC2020().solvePart1(5) == 1;
-		assert new AoC2020().solvePart1(24) == 2;
-		assert new AoC2020().solvePart1(57) == 3;
-		assert new AoC2020().solvePart1(104) == 4;
-		assert new AoC2020().solvePart1(680) == 10;
-		assert new AoC2020().solvePart1(4325) == 25;
-		lap("Part 1", () -> new AoC2020().solvePart1(17_486_751L));
-		lap("Part 2", () -> new AoC2020().solvePart2());
+		assert AoC2020.createDebug(5L).solvePart1() == 1;
+		assert AoC2020.createDebug(24L).solvePart1() == 2;
+		assert AoC2020.createDebug(57L).solvePart1() == 3;
+		assert AoC2020.createDebug(104L).solvePart1() == 4;
+		assert AoC2020.createDebug(680L).solvePart1() == 10;
+		assert AoC2020.createDebug(4325L).solvePart1() == 25;
+		lap("Part 1", () -> AoC2020.create(17_486_751L).solvePart1());
+		lap("Part 2", () -> AoC2020.create(
+				4_541_363_434L,
+				1_340_832_532L,
+				747_786_585L,
+				430_832_752L,
+				369_012_203L,
+				42_715_772L).solvePart2());
 	}
 }
