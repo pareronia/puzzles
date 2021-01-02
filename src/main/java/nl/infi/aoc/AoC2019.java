@@ -87,6 +87,7 @@ public class AoC2019 {
 		return new AoC2019(input, true);
 	}
 	
+	@SuppressWarnings("unused")
 	private void log(Object obj) {
 		if (!debug) {
 			return;
@@ -118,7 +119,11 @@ public class AoC2019 {
 		return Pair.of(resultaat.get(0), resultaat.get(1));
 	}
 	
-	public void visualiseerPart1(List<Positie> flats) {
+	public void visualiseerPart1() {
+		final Pair<List<Positie>, List<Positie>> parsed = parse();
+		final List<Positie> flats = parsed.getLeft();
+		final List<Positie> sprongen = parsed.getRight();
+		final List<Positie> bereiktePosities = berekenPosities(flats, sprongen);
 		final Integer maxFlatX = flats.stream()
 				.max(comparing(p -> p.x))
 				.map(p -> p.x)
@@ -127,8 +132,12 @@ public class AoC2019 {
 				.max(comparing(p -> p.y))
 				.map(p -> p.y)
 				.orElseThrow(() -> new RuntimeException("Empty stream"));
-		Stream.iterate(maxFlatY, i -> i - 1).limit(maxFlatY).forEach(y -> {
+		Stream.iterate(maxFlatY + 1, i -> i - 1).limit(maxFlatY + 1).forEach(y -> {
 			Stream.iterate(1, i -> i + 1).limit(maxFlatX + 1).forEach(x -> {
+				if (bereiktePosities.contains(Positie.of(x, y - 1))) {
+					System.out.print("K");
+					return;
+				}
 				final Optional<Positie> flat = flats.stream()
 						.filter(f -> f.x == x)
 						.findFirst();
@@ -146,17 +155,12 @@ public class AoC2019 {
 		});
 	}
 	
-	public long solvePart1() {
-		final Pair<List<Positie>, List<Positie>> parsed = parse();
-		log(parsed);
-		final List<Positie> flats = parsed.getLeft();
-		final List<Positie> sprongen = parsed.getRight();
-		visualiseerPart1(flats);
+	private List<Positie> berekenPosities(List<Positie> flats, List<Positie> sprongen) {
+		final List<Positie> bereiktePosities = new ArrayList<>();
 		int flat = 0;
-		int sprong = 0;
 		Positie positie = flats.get(flat);
+		bereiktePosities.add(positie);
 		for (int i = 0; i < sprongen.size(); i++) {
-			sprong = i + 1;
 			final Positie deSprong = sprongen.get(i);
 			positie = Positie.of(positie.x + 1 + deSprong.x,
 								 positie.y + deSprong.y);
@@ -166,19 +170,32 @@ public class AoC2019 {
 				if (positie.x == deFlat.x && positie.y >= deFlat.y) {
 					positie = Positie.of(positie.x, deFlat.y);
 					nieuweFlat = j;
-					break;  // geland
+					break;
 				}
 			}
 			if (nieuweFlat > flat) {
+				// geland
+				bereiktePosities.add(positie);
 				flat = nieuweFlat;
 			} else {
-				return sprong;  // niet geland
+				// niet geland
+				bereiktePosities.add(Positie.of(positie.x, 0));
+				break;
 			}
 		}
-		if (flat == flats.size() - 1) {
+		return bereiktePosities;
+	}
+	
+	public long solvePart1() {
+		final Pair<List<Positie>, List<Positie>> parsed = parse();
+		final List<Positie> flats = parsed.getLeft();
+		final List<Positie> sprongen = parsed.getRight();
+		final List<Positie> bereiktePosities = berekenPosities(flats, sprongen);
+		if (bereiktePosities.get(bereiktePosities.size() - 1).y 
+				== flats.get(flats.size() - 1).y) {
 			return 0;  // geland op laatste flat
 		} else {
-			throw new AssertionError("unreachable");
+			return bereiktePosities.size() - 1;
 		}
 	}
 
@@ -205,7 +222,9 @@ public class AoC2019 {
 	public static void main(String[] args) throws Exception {
 		assert AoC2019.createDebug(TEST).solvePart1() == 4;
 		AoC2019.lap("Part 1", () -> AoC2019.create(INPUT1).solvePart1());
+		AoC2019.create(INPUT1).visualiseerPart1();
 		AoC2019.lap("Part 1", () -> AoC2019.create(INPUT2).solvePart1());
+		AoC2019.create(INPUT2).visualiseerPart1();
 	}
 
 	private static final String TEST = 
