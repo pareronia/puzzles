@@ -12,8 +12,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.tuple.Pair;
-
 /**
 <h1><a href="https://aoc.infi.nl/2019">Noordpool gesmolten: <br/>
 Rendieren verkouden</a></h1>
@@ -70,11 +68,11 @@ het dak van het laatste flatgebouw bereikt.</p>
  */
 public class AoC2019 extends AocBase {
 	
-	private final String input;
+	private final Data data;
 	
 	private AoC2019(String input, boolean debug) {
 		super(debug);
-		this.input = input;
+		this.data = parse(input);
 	}
 
 	public static final AoC2019 create(String input) {
@@ -85,7 +83,7 @@ public class AoC2019 extends AocBase {
 		return new AoC2019(input, true);
 	}
 	
-	private Pair<List<Positie>, List<Positie>> parse() {
+	private final Data parse(String input) {
 		final String oneline = input.replace("\r\n", "");
 		final String flatsRegExp = "\"flats\":\\s?\\[(.*)\\],\\s?\"";
 		final String sprongenRegExp = "\"sprongen\":\\s?\\[(.*)\\]";
@@ -106,31 +104,20 @@ public class AoC2019 extends AocBase {
 				= Stream.of(flatsRegExp, sprongenRegExp)
 						.map(parseFunctie)
 						.collect(toList());
-		return Pair.of(resultaat.get(0), resultaat.get(1));
+		return new Data(resultaat.get(0), resultaat.get(1));
 	}
 	
 	public void visualiseerPart1() {
-		final Pair<List<Positie>, List<Positie>> parsed = parse();
-		final List<Positie> flats = parsed.getLeft();
-		final List<Positie> sprongen = parsed.getRight();
-		final List<Positie> bereiktePosities = berekenPosities(flats, sprongen);
-		final Integer maxFlatX = flats.stream()
-				.max(comparing(p -> p.x))
-				.map(p -> p.x)
-				.orElseThrow(() -> new RuntimeException("Empty stream"));
-		final Integer maxFlatY = flats.stream()
-				.max(comparing(p -> p.y))
-				.map(p -> p.y)
-				.orElseThrow(() -> new RuntimeException("Empty stream"));
+		final List<Positie> bereiktePosities = berekenPosities();
+		final Integer maxFlatX = data.vindMaxFlatX();
+		final Integer maxFlatY = data.vindMaxFlatY();
 		Stream.iterate(maxFlatY + 1, i -> i - 1).limit(maxFlatY + 1).forEach(y -> {
 			Stream.iterate(1, i -> i + 1).limit(maxFlatX + 1).forEach(x -> {
 				if (bereiktePosities.contains(Positie.of(x, y - 1))) {
 					System.out.print("K");
 					return;
 				}
-				final Optional<Positie> flat = flats.stream()
-						.filter(f -> f.x == x)
-						.findFirst();
+				final Optional<Positie> flat = data.vindFlatOpX(x);
 				if (flat.isPresent()) {
 					if (y > flat.get().y) {
 						System.out.print(" ");
@@ -145,28 +132,19 @@ public class AoC2019 extends AocBase {
 		});
 	}
 	
-	private List<Positie> berekenPosities(List<Positie> flats, List<Positie> sprongen) {
+	private List<Positie> berekenPosities() {
 		final List<Positie> bereiktePosities = new ArrayList<>();
-		int flat = 0;
-		Positie positie = flats.get(flat);
+		Positie positie = data.getFlat(0);
 		bereiktePosities.add(positie);
-		for (int i = 0; i < sprongen.size(); i++) {
-			final Positie deSprong = sprongen.get(i);
+		for (int i = 0; i < data.aantalSprongen(); i++) {
+			final Positie deSprong = data.getSprong(i);
 			positie = Positie.of(positie.x + 1 + deSprong.x,
 								 positie.y + deSprong.y);
-			int nieuweFlat = flat;
-			for (int j = flat + 1; j < flats.size(); j++) {
-				final Positie deFlat = flats.get(j);
-				if (positie.x == deFlat.x && positie.y >= deFlat.y) {
-					positie = Positie.of(positie.x, deFlat.y);
-					nieuweFlat = j;
-					break;
-				}
-			}
-			if (nieuweFlat > flat) {
+			final Optional<Positie> deFlat = data.vindFlatOnder(positie);
+			if (deFlat.isPresent()) {
 				// geland
+				positie = Positie.of(positie.x, deFlat.get().y);
 				bereiktePosities.add(positie);
-				flat = nieuweFlat;
 			} else {
 				// niet geland
 				bereiktePosities.add(Positie.of(positie.x, 0));
@@ -178,12 +156,9 @@ public class AoC2019 extends AocBase {
 
 	@Override
 	public long solvePart1() {
-		final Pair<List<Positie>, List<Positie>> parsed = parse();
-		final List<Positie> flats = parsed.getLeft();
-		final List<Positie> sprongen = parsed.getRight();
-		final List<Positie> bereiktePosities = berekenPosities(flats, sprongen);
+		final List<Positie> bereiktePosities = berekenPosities();
 		if (bereiktePosities.get(bereiktePosities.size() - 1).y
-				== flats.get(flats.size() - 1).y) {
+				== data.getLaatsteFlat().y) {
 			return 0;  // geland op laatste flat
 		} else {
 			return bereiktePosities.size() - 1;
@@ -252,6 +227,58 @@ public class AoC2019 extends AocBase {
 		public boolean equals(Object obj) {
 			final Positie other = (Positie) obj;
 			return this.x.equals(other.x) && this.y.equals(other.y);
+		}
+	}
+	
+	private static class Data {
+		private final List<Positie> flats;
+		private final List<Positie> sprongen;
+		
+		public Data(List<Positie> flats, List<Positie> sprongen) {
+			this.flats = flats;
+			this.sprongen = sprongen;
+		}
+		
+		public Integer vindMaxFlatX() {
+			return this.flats.stream()
+					.max(comparing(p -> p.x))
+					.map(p -> p.x)
+					.orElseThrow(() -> new RuntimeException("Empty stream"));
+		}
+		
+		public Integer vindMaxFlatY() {
+			return this.flats.stream()
+					.max(comparing(p -> p.y))
+					.map(p -> p.y)
+					.orElseThrow(() -> new RuntimeException("Empty stream"));
+		}
+		
+		public Optional<Positie> vindFlatOpX(Integer x) {
+			return this.flats.stream()
+					.filter(f -> f.x == x)
+					.findFirst();
+		}
+		
+		public Optional<Positie> vindFlatOnder(Positie positie) {
+			return this.flats.stream()
+					.filter(f -> positie.x == f.x && positie.y >= f.y)
+					.findFirst();
+		}
+		
+		public int aantalSprongen() {
+			return this.sprongen.size();
+		}
+		
+		public Positie getFlat(int flat) {
+			return this.flats.get(flat);
+		}
+		
+		public Positie getSprong(int spong) {
+			return this.sprongen.get(spong);
+		}
+		
+		public Positie getLaatsteFlat() {
+			return getFlat(this.flats.size() - 1);
 		}
 	}
 }
