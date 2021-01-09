@@ -5,7 +5,6 @@ import static java.util.stream.Collectors.toList;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -195,40 +194,6 @@ public class AoC2019 extends AocBase {
 			+ "\"sprongen\":[[2,2],[0,2],[2,2],[2,0],[0,3],[0,0],[1,0],[2,2]"
 			+ ",[1,3],[4,0],[0,1],[2,1],[0,0],[2,1],[0,3],[0,2],[3,0],[0,1]"
 			+ ",[0,3],[0,3],[2,0],[1,1],[0,1],[1,2],[4,0],[1,3],[1,3]]}";
-	
-	private static final class Positie {
-		private final Integer x;
-		private final Integer y;
-		
-		private Positie(Integer x, Integer y) {
-			this.x = Objects.requireNonNull(x, "Expect non-null x value");
-			this.y = Objects.requireNonNull(y, "Expect non-null y value");
-		}
-		
-		public static Positie of(Integer x, Integer y) {
-			return new Positie(x, y);
-		}
-
-		@Override
-		public String toString() {
-			return "(x=" + x + ", y=" + y + ")";
-		}
-
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + x.hashCode();
-			result = prime * result + y.hashCode();
-			return result;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			final Positie other = (Positie) obj;
-			return this.x.equals(other.x) && this.y.equals(other.y);
-		}
-	}
 	
 	private static class Data {
 		private final List<Positie> flats;
