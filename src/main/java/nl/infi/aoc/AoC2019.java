@@ -1,15 +1,24 @@
 package nl.infi.aoc;
 
 import static java.util.Comparator.comparing;
+import static java.util.Comparator.naturalOrder;
+import static java.util.stream.Collectors.summingInt;
+import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 /**
 <h1><a href="https://aoc.infi.nl/2019">Noordpool gesmolten: <br/>
@@ -64,6 +73,24 @@ verplaatsingsregels.</li>
 Het antwoord is het stapnummer van de stap waarbij </br>
 de kerstman op de grond valt, of 0 als de kerstman </br>
 het dak van het laatste flatgebouw bereikt.</p>
+<h1>Deel 2</h1>
+<p>Het gebruik van de magische springlaarzen kost energie. <br/>
+Het is belangrijk de verbruikte energie tot een minimum te <br/>
+beperken, zodat de kerstman zelf niet ook nog eens <br/>
+bijdraagt aan de klimaatverandering.</p>
+<p>De energie wordt bepaald door de x en y waarde van de extra <br/>
+kracht bij elkaar op te tellen. Wanneer de kerstman in de <br/>
+lucht boven een flatgebouw hangt in een stap en naar het <br/>
+dak zakt, dan kost dat geen energie.</p>
+<p>Bepaal voor de flatgebouwen uit opdracht 1 welke combinatie <br/>
+van stappen het meest efficient is. Het antwoord is de <br/>
+totale hoeveelheid energie nodig om van het eerste naar het <br/>
+laatste flatgebouw te lopen. Omdat de kerstman stoute <br/>
+kinderen overslaat hoeft hij niet op het dak van elk <br/>
+flatgebouw te landen.</p>
+<p><b>Hoeveel energie kost het meest efficiente pad van het dak <br/>
+van het eerste flatgebouw naar het dak van het laatste <br/>
+flatgebouw?</b></p>
  */
 public class AoC2019 extends AocBase {
 	
@@ -105,9 +132,8 @@ public class AoC2019 extends AocBase {
 						.collect(toList());
 		return new Data(resultaat.get(0), resultaat.get(1));
 	}
-	
-	public void visualiseerPart1() {
-		final List<Positie> bereiktePosities = berekenPosities();
+
+	private void visualizeer(List<Positie> bereiktePosities) {
 		final Integer maxFlatX = data.vindMaxFlatX();
 		final Integer maxFlatY = data.vindMaxFlatY();
 		Stream.iterate(maxFlatY + 1, i -> i - 1).limit(maxFlatY + 1).forEach(y -> {
@@ -131,7 +157,11 @@ public class AoC2019 extends AocBase {
 		});
 	}
 	
-	private List<Positie> berekenPosities() {
+	public void visualiseerPart1() {
+		visualizeer(berekenPosities1());
+	}
+	
+	private List<Positie> berekenPosities1() {
 		final List<Positie> bereiktePosities = new ArrayList<>();
 		Positie positie = data.getFlat(0);
 		bereiktePosities.add(positie);
@@ -155,13 +185,57 @@ public class AoC2019 extends AocBase {
 
 	@Override
 	public long solvePart1() {
-		final List<Positie> bereiktePosities = berekenPosities();
+		final List<Positie> bereiktePosities = berekenPosities1();
 		if (bereiktePosities.get(bereiktePosities.size() - 1).y
 				== data.getLaatsteFlat().y) {
 			return 0;  // geland op laatste flat
 		} else {
 			return bereiktePosities.size() - 1;
 		}
+	}
+	
+	public void visualiseerPart2() {
+		final List<Pair<Positie, Integer>> bereiktePosities2 = berekenPosities2();
+		visualizeer(bereiktePosities2.stream().map(Pair::getLeft).collect(toList()));
+	}
+	
+	private List<Pair<Positie, Integer>> berekenPosities2() {
+		final Set<Positie> mogelijkeSprongen = new HashSet<>();
+		Stream.iterate(0, i -> i + 1).limit(5).forEach(i -> {
+			Stream.iterate(0, j -> j + 1).limit(5 - i)
+				.map(j -> Positie.of(i, j))
+				.collect(toCollection(() -> mogelijkeSprongen));
+		});
+//		log(mogelijkeSprongen);
+		final List<Pair<Positie, Integer>> bereiktePosities = new ArrayList<>();
+		Positie positie = data.getFlat(0);
+		bereiktePosities.add(Pair.of(positie, 0));
+		while (!positie.equals(data.getLaatsteFlat())) {
+			final Map<Positie, Set<Positie>> landingen = new HashMap<>();
+			for (final Positie deSprong : mogelijkeSprongen) {
+				final Positie sprong = Positie.of(positie.x + 1 + deSprong.x,
+												  positie.y + deSprong.y);
+				data.vindFlatOnder(sprong).ifPresent(flat ->
+						landingen
+							.computeIfAbsent(flat, f -> new HashSet<>())
+							.add(deSprong));
+			}
+			positie = landingen.keySet().stream()
+					.max(comparing(flat -> flat.x))
+					.orElseThrow(() -> new RuntimeException());
+			final Integer energie = landingen.get(positie).stream()
+					.map(sprong -> sprong.x + sprong.y)
+					.min(naturalOrder())
+					.orElseThrow(() -> new RuntimeException());
+			bereiktePosities.add(Pair.of(positie, energie));
+		}
+		return bereiktePosities;
+	}
+
+	@Override
+	public long solvePart2() {
+		return berekenPosities2().stream()
+				.collect(summingInt(Pair::getRight));
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -170,6 +244,12 @@ public class AoC2019 extends AocBase {
 		AoC2019.create(INPUT1).visualiseerPart1();
 		AoC2019.lap("Part 1", () -> AoC2019.create(INPUT2).solvePart1());
 		AoC2019.create(INPUT2).visualiseerPart1();
+		assert AoC2019.createDebug(TEST).solvePart2() == 7;
+		AoC2019.createDebug(TEST).visualiseerPart2();
+		AoC2019.lap("Part 2", () -> AoC2019.create(INPUT1).solvePart2());
+		AoC2019.create(INPUT1).visualiseerPart2();
+		AoC2019.lap("Part 2", () -> AoC2019.create(INPUT2).solvePart2());
+		AoC2019.create(INPUT2).visualiseerPart2();
 	}
 
 	private static final String TEST =
