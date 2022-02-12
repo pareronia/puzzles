@@ -6,7 +6,7 @@ import java.util.stream.Stream;
 
 /**
  * 
-<h1><a href="https://aoc.infi.nl/">Bepakt en bezakt in 2020</a></h1>
+<h1><a href="https://aoc.infi.nl/2020">Bepakt en bezakt in 2020</a></h1>
 <p>
 In het bijzondere jaar 2020 blijkt de magie van kerstman <br/>
 verbazingwekkend als altijd, want ondanks dat normale mensen <br/>
@@ -137,20 +137,20 @@ public class AoC2020 extends AocBase {
 	
 	final Long[] input;
 	
-	private AoC2020(boolean debug, Long[] input) {
+	private AoC2020(final boolean debug, final Long[] input) {
 		super(debug);
 		this.input = input;
 	}
 
-	public static final AoC2020 create(Long... input) {
+	public static final AoC2020 create(final Long... input) {
 		return new AoC2020(false, input);
 	}
 
-	public static final AoC2020 createDebug(Long... input) {
+	public static final AoC2020 createDebug(final Long... input) {
 		return new AoC2020(true, input);
 	}
 
-	private long berekenPakjesVoorZijde(long zijde) {
+	private long berekenPakjesVoorZijde(final long zijde) {
 		long pakjes = zijde;
 		long summant = zijde;
 		for (long i = 0; i < zijde - 1; i++) {
@@ -163,7 +163,7 @@ public class AoC2020 extends AocBase {
 		return pakjes;
 	}
 	
-	private long zoekZijdeVoorPakjes(long pakjes) {
+	private long zoekZijdeVoorPakjes(final long pakjes) {
 		long i = 1;
 		while (berekenPakjesVoorZijde(i) < pakjes) {
 			i++;
@@ -172,18 +172,18 @@ public class AoC2020 extends AocBase {
 	}
 
 	@Override
-	public long solvePart1() {
+	public Long solvePart1() {
 		assert this.input.length == 1;
 		return zoekZijdeVoorPakjes(input[0]);
 	}
 	
 	@Override
-	public long solvePart2() {
+	public Long solvePart2() {
 		return 8 * Stream.of(this.input)
 				.collect(summingLong(i -> zoekZijdeVoorPakjes(i)));
 	}
 	
-	public static void main(String[] args) throws Exception {
+	public static void main(final String[] args) throws Exception {
 		assert AoC2020.createDebug(5L).solvePart1() == 1;
 		assert AoC2020.createDebug(24L).solvePart1() == 2;
 		assert AoC2020.createDebug(57L).solvePart1() == 3;

@@ -96,20 +96,20 @@ public class AoC2019 extends AocBase {
 	
 	private final Data data;
 	
-	private AoC2019(String input, boolean debug) {
+	private AoC2019(final String input, final boolean debug) {
 		super(debug);
 		this.data = parse(input);
 	}
 
-	public static final AoC2019 create(String input) {
+	public static final AoC2019 create(final String input) {
 		return new AoC2019(input, false);
 	}
 
-	public static final AoC2019 createDebug(String input) {
+	public static final AoC2019 createDebug(final String input) {
 		return new AoC2019(input, true);
 	}
 	
-	private final Data parse(String input) {
+	private final Data parse(final String input) {
 		final String oneline = input.replace("\r\n", "");
 		final String flatsRegExp = "\"flats\":\\s?\\[(.*)\\],\\s?\"";
 		final String sprongenRegExp = "\"sprongen\":\\s?\\[(.*)\\]";
@@ -133,7 +133,7 @@ public class AoC2019 extends AocBase {
 		return new Data(resultaat.get(0), resultaat.get(1));
 	}
 
-	private void visualizeer(List<Positie> bereiktePosities) {
+	private void visualizeer(final List<Positie> bereiktePosities) {
 		final Integer maxFlatX = data.vindMaxFlatX();
 		final Integer maxFlatY = data.vindMaxFlatY();
 		Stream.iterate(maxFlatY + 1, i -> i - 1).limit(maxFlatY + 1).forEach(y -> {
@@ -184,7 +184,7 @@ public class AoC2019 extends AocBase {
 	}
 
 	@Override
-	public long solvePart1() {
+	public Integer solvePart1() {
 		final List<Positie> bereiktePosities = berekenPosities1();
 		if (bereiktePosities.get(bereiktePosities.size() - 1).y
 				== data.getLaatsteFlat().y) {
@@ -233,12 +233,12 @@ public class AoC2019 extends AocBase {
 	}
 
 	@Override
-	public long solvePart2() {
+	public Integer solvePart2() {
 		return berekenPosities2().stream()
 				.collect(summingInt(Pair::getRight));
 	}
 
-	public static void main(String[] args) throws Exception {
+	public static void main(final String[] args) throws Exception {
 		assert AoC2019.createDebug(TEST).solvePart1() == 4;
 		AoC2019.lap("Part 1", () -> AoC2019.create(INPUT1).solvePart1());
 		AoC2019.create(INPUT1).visualiseerPart1();
@@ -279,7 +279,7 @@ public class AoC2019 extends AocBase {
 		private final List<Positie> flats;
 		private final List<Positie> sprongen;
 		
-		public Data(List<Positie> flats, List<Positie> sprongen) {
+		public Data(final List<Positie> flats, final List<Positie> sprongen) {
 			this.flats = flats;
 			this.sprongen = sprongen;
 		}
@@ -298,13 +298,13 @@ public class AoC2019 extends AocBase {
 					.orElseThrow(() -> new RuntimeException("Empty stream"));
 		}
 		
-		public Optional<Positie> vindFlatOpX(Integer x) {
+		public Optional<Positie> vindFlatOpX(final Integer x) {
 			return this.flats.stream()
 					.filter(f -> f.x == x)
 					.findFirst();
 		}
 		
-		public Optional<Positie> vindFlatOnder(Positie positie) {
+		public Optional<Positie> vindFlatOnder(final Positie positie) {
 			return this.flats.stream()
 					.filter(f -> positie.x == f.x && positie.y >= f.y)
 					.findFirst();
@@ -314,11 +314,11 @@ public class AoC2019 extends AocBase {
 			return this.sprongen.size();
 		}
 		
-		public Positie getFlat(int flat) {
+		public Positie getFlat(final int flat) {
 			return this.flats.get(flat);
 		}
 		
-		public Positie getSprong(int spong) {
+		public Positie getSprong(final int spong) {
 			return this.sprongen.get(spong);
 		}
 		

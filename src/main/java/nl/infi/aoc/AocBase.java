@@ -6,7 +6,7 @@ public abstract class AocBase {
 
 	protected final boolean debug;
 
-	public static <V> void lap(String prefix, Callable<V> callable) throws Exception {
+	public static <V> void lap(final String prefix, final Callable<V> callable) throws Exception {
 	    final long timerStart = System.nanoTime();
 	    final V answer = callable.call();
 	    final long timeSpent = (System.nanoTime() - timerStart) / 1000;
@@ -14,7 +14,7 @@ public abstract class AocBase {
 	    String unit;
 	    if (timeSpent < 1000) {
 	        time = timeSpent;
-	        unit = "µs";
+	        unit = "Âµs";
 	    } else if (timeSpent < 1_000_000) {
 	        time = timeSpent / 1000.0;
 	        unit = "ms";
@@ -26,19 +26,19 @@ public abstract class AocBase {
 	    								 prefix, answer, time, unit));
 	}
 
-	protected AocBase(boolean debug) {
+	protected AocBase(final boolean debug) {
 		this.debug = debug;
 	}
 	
-	public long solvePart1() {
+	public Object solvePart1() {
 		return 0L;
 	}
 	
-	public long solvePart2() {
+	public Object solvePart2() {
 		return 0L;
 	}
 	
-	protected void log(Object obj) {
+	protected void log(final Object obj) {
 		if (!debug) {
 			return;
 		}

@@ -27,7 +27,7 @@ hebben wij daarom bezorgrobots gebouwd, zodat wij ons volledig kunnen richten
 op code committen en kerstborrels bezoeken.</p>
 <p>Helaas zitten we pas op release 0.9, want we kwamen er achter dat soms
 meerdere robots op dezelfde plek uit kunnen komen en dat is natuurlijk niet
-efficiënt. We moeten dit snel oplossen door te bepalen hoe vaak deze situatie
+efficiï¿½nt. We moeten dit snel oplossen door te bepalen hoe vaak deze situatie
 voorkomt, want het is al bijna de 25ste! Help jij mee?</p>
 <p>Om te helpen met debuggen hebben we enkele logs beschikbaar gemaakt. Deze
 zijn in het volgende formaat opgeslagen:</p>
@@ -59,27 +59,27 @@ volgorde als dat de robots zijn gedefinieerd.</p>
 <p>Dit is heel gek: tijdens het doorspitten van de logs ontdekten we een vreemd
 patroon in de bewegingen van de robots. Het lijkt erop dat de robots slimmer
 zijn dan we dachten en dat ze tijdens hun werkzaamheden een patroon hebben
-gemaakt dat ons niet eerder was opgevallen. This could be the AI we’ve been
+gemaakt dat ons niet eerder was opgevallen. This could be the AI weï¿½ve been
 looking for: <b>kun jij het geheime bericht vinden?</b></p>
  */
 public class AoC2017 extends AocBase {
 
 	private final Data data;
 	
-	protected AoC2017(boolean debug, String input) {
+	protected AoC2017(final boolean debug, final String input) {
 		super(debug);
 		this.data = parse(input);
 	}
 	
-	public static AoC2017 createDebug(String input) {
+	public static AoC2017 createDebug(final String input) {
 		return new AoC2017(true, input);
 	}
 	
-	public static AoC2017 create(String input) {
+	public static AoC2017 create(final String input) {
 		return new AoC2017(false, input);
 	}
 	
-	private Data parse(String input) {
+	private Data parse(final String input) {
 		final Matcher m = Pattern.compile("\\[[0-9]+,[0-9]+\\]").matcher(input);
 		final List<Positie> starts = new ArrayList<>();
 		int end = 0;
@@ -124,7 +124,7 @@ public class AoC2017 extends AocBase {
 	}
 	
 	@Override
-	public long solvePart1() {
+	public Long solvePart1() {
 		return doeBewegingen().stream()
 				.map(a -> Stream.of(a).collect(toSet()))
 				.filter(s -> s.size() == 1)
@@ -132,7 +132,7 @@ public class AoC2017 extends AocBase {
 	}
 
 	@Override
-	public long solvePart2() {
+	public Long solvePart2() {
 		final Rooster rooster = new Rooster(
 				doeBewegingen().stream()
 					.flatMap(Stream::of)
@@ -152,7 +152,7 @@ public class AoC2017 extends AocBase {
 		return 0L;
 	}
 
-	public static void main(String[] args) throws Exception {
+	public static void main(final String[] args) throws Exception {
 		assert AoC2017.createDebug(TEST).solvePart1() == 2;
 		assert AoC2017.createDebug(TEST).solvePart2() == 0;
 
@@ -171,7 +171,7 @@ public class AoC2017 extends AocBase {
 		final List<Positie> starts;
 		final List<Positie> posities;
 
-		public Data(List<Positie> starts, List<Positie> posities) {
+		public Data(final List<Positie> starts, final List<Positie> posities) {
 			this.starts = starts;
 			this.posities = posities;
 		}
@@ -180,12 +180,12 @@ public class AoC2017 extends AocBase {
 			return starts.size();
 		}
 		
-		public Positie startPositieRobot(int robot) {
+		public Positie startPositieRobot(final int robot) {
 			return starts.get(robot);
 		}
 		
-		public Iterator<Positie> bewegingenRobot(int robot) {
-			return new Iterator<Positie>() {
+		public Iterator<Positie> bewegingenRobot(final int robot) {
+			return new Iterator<>() {
 				int i = robot % aantalRobots();
 				
 				@Override
@@ -214,7 +214,7 @@ public class AoC2017 extends AocBase {
 	private static final class Rooster {
 		private final Set<Positie> punten;
 
-		public Rooster(Set<Positie> punten) {
+		public Rooster(final Set<Positie> punten) {
 			this.punten = punten;
 		}
 
@@ -232,7 +232,7 @@ public class AoC2017 extends AocBase {
 					.orElseThrow(() -> new RuntimeException("Empty stream"));
 		}
 		
-		public boolean bevat(Positie positie) {
+		public boolean bevat(final Positie positie) {
 			Objects.requireNonNull(positie);
 			return this.punten.contains(positie);
 		}
