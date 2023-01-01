@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -325,5 +326,17 @@ public class AoC2019 extends AocBase {
 		public Positie getLaatsteFlat() {
 			return getFlat(this.flats.size() - 1);
 		}
+	}
+
+	final record Positie(int x, int y) {
+	
+	    public static Positie of(final Integer x, final Integer y) {
+	        return new Positie(x, y);
+	    }
+	
+	    public Positie add(final Positie pos) {
+	        Objects.requireNonNull(pos);
+	        return Positie.of(this.x + pos.x, this.y + pos.y);
+	    }
 	}
 }

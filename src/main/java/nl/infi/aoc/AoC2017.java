@@ -164,8 +164,8 @@ public class AoC2017 extends AocBase {
 		lap("Part 2", () -> AoC2017.create(input).solvePart2());
 	}
 	
-	private static final String TEST = "[0,0][1,1](1,0)(0,-1)(0,1)(-1,0)(-1,0)"
-			+ "(0,1)(0,-1)(1,0)";
+	private static final String TEST = """
+        [0,0][1,1](1,0)(0,-1)(0,1)(-1,0)(-1,0)(0,1)(0,-1)(1,0)""";
 	
 	private static final class Data {
 		final List<Positie> starts;
@@ -242,4 +242,16 @@ public class AoC2017 extends AocBase {
 			return "Rooster [punten=" + punten + "]";
 		}
 	}
+
+    final record Positie(int x, int y) {
+        
+        public static Positie of(final Integer x, final Integer y) {
+            return new Positie(x, y);
+        }
+        
+        public Positie add(final Positie pos) {
+            Objects.requireNonNull(pos);
+            return Positie.of(this.x + pos.x, this.y + pos.y);
+        }
+    }
 }
