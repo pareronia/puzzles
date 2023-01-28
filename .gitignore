@@ -2,3 +2,7 @@
 /bin/
 /.classpath
 /.project
+/.venv
+.env
+*~
+*.swp
