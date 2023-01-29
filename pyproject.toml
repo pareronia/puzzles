@@ -1,0 +1,3 @@
+[tool.vulture]
+exclude = [".venv"]
+min_confidence = 80
