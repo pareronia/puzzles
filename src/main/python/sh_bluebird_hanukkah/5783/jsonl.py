@@ -45,31 +45,35 @@ class Puzzle:
         return len(skus & product_skus) > 0
 
     def day_1(self) -> Customer:
-        pad = {
-            "ABC": "2",
-            "DEF": "3",
-            "GHI": "4",
-            "JKL": "5",
-            "MNO": "6",
-            "PQRS": "7",
-            "TUV": "8",
-            "WXYZ": "9",
-        }
+        pad = [
+            ("ABC", "2"),
+            ("DEF", "3"),
+            ("GHI", "4"),
+            ("JKL", "5"),
+            ("MNO", "6"),
+            ("PQRS", "7"),
+            ("TUV", "8"),
+            ("WXYZ", "9"),
+        ]
 
         def match(customer: Customer) -> bool:
             def letter_dial_pad(letter: str) -> str:
-                for k, v in pad.items():
-                    if letter in k:
-                        return v
+                for letters, digit in pad:
+                    if letter in letters:
+                        return digit
                 raise ValueError(letter)
 
             phone = customer["phone"].replace("-", "")
             last_name = (
                 customer["name"].split()[-1].replace(" ", "").replace(".", "")
             )
-            return len(phone) == len(last_name) and all(
-                phone[i] != "1" and phone[i] == letter_dial_pad(letter.upper())
-                for i, letter in enumerate(last_name)
+            return (
+                len(phone) == len(last_name)
+                and "1" not in phone
+                and all(
+                    ph_i == letter_dial_pad(ln_i.upper())
+                    for ph_i, ln_i in zip(phone, last_name)
+                )
             )
 
         return self.find_customer(lambda c: match(c))
@@ -134,7 +138,7 @@ class Puzzle:
             if re.fullmatch(r".+ \([a-z]+\)", v["desc"]) is not None
         }
         customerids = [
-            o1["customerid"]
+            o2["customerid"]
             for o1, o2 in zip(self.orders, self.orders[1:])
             if o1["customerid"] == day_6["customerid"]
             and o1["ordered"] == o1["shipped"]
