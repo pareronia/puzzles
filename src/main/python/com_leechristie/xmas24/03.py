@@ -1,8 +1,5 @@
-from __future__ import annotations
-
-import itertools
 import os
-from tqdm import tqdm
+from functools import cache
 from typing import Iterable
 
 TEST = """\
@@ -19,7 +16,7 @@ TEST = """\
 """
 
 
-def part_1(input: Iterable[str], pick: int) -> float:
+def part_1(input: Iterable[str], pick: int = 8) -> float:
     values = list(map(float, input))
     open, unavailable = set[int](), set[int]()
     for _ in range(pick):
@@ -39,16 +36,19 @@ def part_1(input: Iterable[str], pick: int) -> float:
     return sum(values[i] for i in open)
 
 
-def part_2(input: Iterable[str], pick: int) -> float:
+def part_2(input: Iterable[str], pick: int = 8) -> float:
     values = list(map(float, input))
-    best = 0.0
-    for c in tqdm(itertools.combinations(range(len(values)), pick)):
-        for i in range(1, pick):
-            if abs(c[i] - c[i - 1]) == 1:
-                break
-        else:
-            best = max(best, sum(values[j] for j in c))
-    return best
+
+    @cache
+    def best(idx: int, pick: int) -> float:
+        size = len(values) - idx
+        if size == 0 or pick == 0:
+            return 0.0
+        if size == 1:
+            return values[idx]
+        return max(values[idx] + best(idx + 2, pick - 1), best(idx + 1, pick))
+
+    return best(0, pick)
 
 
 def main():
@@ -60,8 +60,8 @@ def main():
     )
     with open(input_file) as f:
         input = tuple(_ for _ in f.read().rstrip("\r\n").splitlines())
-    print(f"Part 1: {part_1(input, 8):.2f}")
-    print(f"Part 2: {part_2(input, 8):.2f}")
+    print(f"Part 1: {part_1(input):.2f}")
+    print(f"Part 2: {part_2(input):.2f}")
 
 
 if __name__ == "__main__":
